@@ -1,0 +1,255 @@
+// Power BI measures for the Legal AI Operations Observatory.
+//
+// Generated from docs/DAX_MEASURES.md by src/export_dax.py -- edit the
+// documentation, not this file. The documentation carries the value each
+// measure must return; a measure that disagrees with it is wrong in the model,
+// not in the database.
+//
+// Paste one measure at a time into Power BI Desktop:
+//   right-click the _Measures table -> New measure -> paste -> Enter
+// They are in dependency order, so work top to bottom.
+
+// ---- Active Lawyers ----
+Active Lawyers = DISTINCTCOUNT ( fact_ai_session[lawyer_id] )
+
+// ---- Sessions ----
+Sessions = COUNTROWS ( fact_ai_session )
+
+// ---- Token Cost AUD ----
+Token Cost AUD = SUM ( fact_ai_session[cost_aud] )
+
+// ---- Licence Cost AUD ----
+Licence Cost AUD = SUM ( fact_seat_month[licence_cost_aud] )
+
+// ---- Total AI Cost AUD ----
+Total AI Cost AUD = [Token Cost AUD] + [Licence Cost AUD]
+
+// ---- Accepted Outputs ----
+Accepted Outputs =
+CALCULATE ( COUNTROWS ( fact_ai_output ), fact_ai_output[accepted] = TRUE () )
+
+// ---- Open Incidents ----
+Open Incidents =
+CALCULATE ( COUNTROWS ( fact_incident ), fact_incident[resolved] = FALSE () )
+
+// ---- Breached Rules ----
+Breached Rules =
+CALCULATE ( COUNTROWS ( vw_alert_status ), vw_alert_status[is_breached] = TRUE () )
+
+// ---- Alert Rules Title ----
+Alert Rules Title =
+"Alert rules - " & FORMAT ( [Breached Rules], "0" )
+    & " of " & FORMAT ( COUNTROWS ( vw_alert_status ), "0" ) & " breached"
+
+// ---- Lawyer Population ----
+Lawyer Population =
+CALCULATE (
+    DISTINCTCOUNT ( dim_lawyer[lawyer_id] ),
+    KEEPFILTERS ( dim_lawyer[is_active] = TRUE () )
+)
+
+// ---- Adoption Rate ----
+Adoption Rate = DIVIDE ( [Active Lawyers], [Lawyer Population] )
+
+// ---- Cost per Accepted Output ----
+Cost per Accepted Output = DIVIDE ( [Total AI Cost AUD], [Accepted Outputs] )
+
+// ---- Acceptance Rate ----
+Acceptance Rate = DIVIDE ( [Accepted Outputs], COUNTROWS ( fact_ai_output ) )
+
+// ---- Review Coverage ----
+Review Coverage =
+DIVIDE (
+    CALCULATE (
+        COUNTROWS ( fact_ai_output ),
+        KEEPFILTERS ( fact_ai_output[effective_review_policy] = "Mandatory" ),
+        KEEPFILTERS ( fact_ai_output[reviewed] = TRUE () )
+    ),
+    CALCULATE (
+        COUNTROWS ( fact_ai_output ),
+        KEEPFILTERS ( fact_ai_output[effective_review_policy] = "Mandatory" )
+    )
+)
+
+// ---- Adoption Rate (Rolling 12 Weeks) ----
+Adoption Rate (Rolling 12 Weeks) =
+DIVIDE (
+    CALCULATE (
+        DISTINCTCOUNT ( fact_ai_session[lawyer_id] ),
+        DATESINPERIOD ( dim_date[date], MAX ( dim_date[date] ), -84, DAY )
+    ),
+    [Lawyer Population]
+)
+
+// ---- Total Cost AUD FYTD ----
+Total Cost AUD FYTD = TOTALYTD ( [Token Cost AUD], dim_date[date], "6-30" )
+
+// ---- Adoption Rate MoM ----
+Adoption Rate MoM =
+[Adoption Rate] - CALCULATE ( [Adoption Rate], DATEADD ( dim_date[date], -1, MONTH ) )
+
+// ---- Sessions per Active Lawyer ----
+Sessions per Active Lawyer = DIVIDE ( [Sessions], [Active Lawyers] )
+
+// ---- Lawyers Never Adopted ----
+Lawyers Never Adopted =
+VAR EverAdopted =
+    CALCULATE ( DISTINCTCOUNT ( fact_ai_session[lawyer_id] ), REMOVEFILTERS ( dim_date ) )
+RETURN
+    [Lawyer Population] - EverAdopted
+
+// ---- Never Adopted % ----
+Never Adopted % = DIVIDE ( [Lawyers Never Adopted], [Lawyer Population] )
+
+// ---- Cohort Lawyers ----
+Cohort Lawyers = SUM ( vw_retention_cohort[cohort_lawyers] )
+
+// ---- Week-4 Retention ----
+Week-4 Retention =
+DIVIDE (
+    SUM ( vw_retention_cohort[retained_lawyers] ),
+    SUMX (
+        FILTER (
+            vw_retention_cohort,
+            NOT ISBLANK ( vw_retention_cohort[retained_lawyers] )
+        ),
+        vw_retention_cohort[cohort_lawyers]
+    )
+)
+
+// ---- p95 Latency (ms) ----
+p95 Latency (ms) =
+PERCENTILEX.INC (
+    FILTER ( fact_ai_session, fact_ai_session[status] = "Success" ),
+    fact_ai_session[latency_ms],
+    0.95
+)
+
+// ---- Error Rate ----
+Error Rate =
+DIVIDE (
+    CALCULATE ( COUNTROWS ( fact_ai_session ),
+                KEEPFILTERS ( fact_ai_session[status] <> "Success" ) ),
+    COUNTROWS ( fact_ai_session )
+)
+
+// ---- Median Edit Distance ----
+Median Edit Distance = MEDIANX ( fact_ai_output, fact_ai_output[edit_distance_pct] )
+
+// ---- Mandatory Review Gap ----
+Mandatory Review Gap =
+CALCULATE ( COUNTROWS ( fact_ai_output ), fact_ai_output[is_review_gap] = TRUE () )
+
+// ---- Retry Rate ----
+Retry Rate =
+DIVIDE (
+    CALCULATE ( COUNTROWS ( fact_ai_session ),
+                KEEPFILTERS ( fact_ai_session[retry_count] > 0 ) ),
+    COUNTROWS ( fact_ai_session )
+)
+
+// ---- Heavy Rework Share ----
+Heavy Rework Share =
+DIVIDE (
+    CALCULATE (
+        COUNTROWS ( fact_ai_output ),
+        KEEPFILTERS ( fact_ai_output[accepted] = TRUE () ),
+        KEEPFILTERS ( fact_ai_output[edit_distance_pct] > 40 )
+    ),
+    [Accepted Outputs]
+)
+
+// ---- Governance Exposure % ----
+Governance Exposure % =
+DIVIDE (
+    CALCULATE (
+        COUNTROWS ( fact_ai_session ),
+        KEEPFILTERS ( dim_matter[confidentiality_tier] IN { "Restricted", "Barrier" } )
+    ),
+    COUNTROWS ( fact_ai_session )
+)
+
+// ---- Matters ----
+Matters = COUNTROWS ( dim_matter )
+
+// ---- Share of Sessions % ----
+Share of Sessions % =
+DIVIDE (
+    [Sessions],
+    CALCULATE ( [Sessions], REMOVEFILTERS ( dim_matter[confidentiality_tier] ) )
+)
+
+// ---- Share of Matters % ----
+Share of Matters % =
+DIVIDE (
+    [Matters],
+    CALCULATE ( [Matters], REMOVEFILTERS ( dim_matter[confidentiality_tier] ) )
+)
+
+// ---- Screen — Mandatory Outputs ----
+Screen — Mandatory Outputs = SUM ( vw_governance_screen[mandatory_outputs] )
+
+// ---- Screen — Review Completion ----
+Screen — Review Completion =
+DIVIDE (
+    SUM ( vw_governance_screen[mandatory_reviewed] ),
+    SUM ( vw_governance_screen[mandatory_outputs] )
+)
+
+// ---- Screen — Sensitive Rate ----
+Screen — Sensitive Rate =
+DIVIDE (
+    SUM ( vw_governance_screen[sensitive_sessions] ),
+    SUM ( vw_governance_screen[sessions] )
+)
+
+// ---- Post-Adoption Hours ----
+Post-Adoption Hours =
+CALCULATE ( SUM ( fact_time_entry[hours] ),
+            fact_time_entry[is_post_adoption] = TRUE () )
+
+// ---- Notional Capacity Released (AUD) ----
+Notional Capacity Released (AUD) =
+SUMX (
+    SUMMARIZE ( fact_time_entry, dim_lawyer[lawyer_id], dim_matter[fee_arrangement] ),
+    VAR e =
+        DIVIDE (
+            LOOKUPVALUE (
+                fact_billable_impact_estimate[estimate_pct],
+                fact_billable_impact_estimate[fee_arrangement],
+                dim_matter[fee_arrangement]
+            ),
+            100
+        )
+    VAR ReleasedHours = DIVIDE ( [Post-Adoption Hours] * -e, 1 + e )
+    RETURN ReleasedHours * CALCULATE ( MAX ( dim_lawyer[standard_charge_rate_aud] ) )
+)
+
+// ---- Revenue at Risk — Hourly (AUD) ----
+Revenue at Risk — Hourly (AUD) =
+CALCULATE ( [Notional Capacity Released (AUD)],
+            KEEPFILTERS ( dim_matter[fee_arrangement] = "Hourly" ),
+            KEEPFILTERS ( fact_time_entry[billable] = TRUE () ) )
+
+// ---- Capacity Released — Fixed Price (AUD) ----
+Capacity Released — Fixed Price (AUD) =
+CALCULATE ( [Notional Capacity Released (AUD)],
+            KEEPFILTERS ( dim_matter[fee_arrangement] IN { "Fixed Fee", "Capped" } ) )
+
+// ---- AI Matters ----
+AI Matters =
+CALCULATE ( DISTINCTCOUNT ( fact_time_entry[matter_id] ),
+            fact_time_entry[is_post_adoption] = TRUE () )
+
+// ---- Idle Seat Share ----
+Idle Seat Share =
+DIVIDE (
+    CALCULATE ( COUNTROWS ( fact_seat_month ),
+                fact_seat_month[used_in_month] = FALSE () ),
+    COUNTROWS ( fact_seat_month )
+)
+
+// ---- Idle Licence Cost AUD ----
+Idle Licence Cost AUD =
+CALCULATE ( SUM ( fact_seat_month[licence_cost_aud] ),
+            fact_seat_month[used_in_month] = FALSE () )

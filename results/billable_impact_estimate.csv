@@ -1,0 +1,4 @@
+estimate_id,fee_arrangement,estimate_pct,ci_low_pct,ci_high_pct,se_pct,treated_entries,control_entries,metric,method,fixed_effects,control_definition,n_cells,n_clusters,generated_on
+1,Capped,-8.94,-11.54,-6.27,1.48,20972,15056,Hours per lawyer-matter-day,"OLS on log(hours), lawyer-clustered SE",fee_arrangement x practice_area x level,Timesheet lines of the 138 lawyers with fewer than 20 AI sessions across the window,50,370,2026-09-03
+2,Fixed Fee,-14.31,-18.08,-10.36,2.3,19353,14864,Hours per lawyer-matter-day,"OLS on log(hours), lawyer-clustered SE",fee_arrangement x practice_area x level,Timesheet lines of the 138 lawyers with fewer than 20 AI sessions across the window,50,370,2026-09-03
+3,Hourly,-8.33,-10.78,-5.82,1.38,49199,51145,Hours per lawyer-matter-day,"OLS on log(hours), lawyer-clustered SE",fee_arrangement x practice_area x level,Timesheet lines of the 138 lawyers with fewer than 20 AI sessions across the window,50,370,2026-09-03

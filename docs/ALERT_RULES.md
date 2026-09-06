@@ -1,0 +1,200 @@
+# Alert rules
+
+Generated from `dim_alert_rule` by `src/export_alert_rules.py` — edit the rule
+data, not this file.
+
+This is a rule catalogue, not an alerting system. Building the delivery
+machinery would have been the easy half and the less useful one: what a firm
+lacks at this stage is not a way to send emails, it is agreement on what should
+trigger one and why.
+
+**Thresholds are data.** `vw_alert_status` computes a current value for each
+rule and applies the `threshold_value` and `comparison` stored here, so changing
+a threshold is a row update rather than an edit to SQL that hard-coded it. The
+`rationale` travels with the breach.
+
+**Governance thresholds are tighter, deliberately.** An operational rule
+tolerates a few percent of failure because the cost of a failure is a lawyer's
+wasted minute. A barrier-coverage rule does not, because the cost of a failure
+is privileged information crossing an information barrier — not recoverable, and
+reportable. A tolerance that is sensible for latency is negligent for a barrier.
+Being able to hold both kinds of threshold in the same catalogue, and to say why
+they differ, is the point of the document.
+
+16 rules: 6 governance, 5 operational, 2 quality, 3 cost.
+
+## Governance
+
+Tight thresholds, set against the cost of the failure they guard rather than against a service level.
+
+### 11. Review coverage below 95% on Barrier matters
+| | |
+|---|---|
+| **Condition** | `review coverage where confidentiality_tier = Barrier` |
+| **Fires when** | value `<` 0.95 |
+| **Severity** | Critical |
+| **Owner** | General Counsel |
+
+The operational rules above tolerate a few percent of failure because the cost of a failure is a lawyer's wasted minute. Here the cost of a failure is privileged information crossing an information barrier, which is not recoverable and is reportable. A tolerance that is sensible for latency is negligent for a barrier.
+
+### 12. Any unreviewed output where review is Mandatory
+| | |
+|---|---|
+| **Condition** | `count of outputs, effective policy Mandatory and reviewed = 0` |
+| **Fires when** | value `>` 0 |
+| **Severity** | Critical |
+| **Owner** | Risk & Compliance |
+
+Expressed as a count, not a rate. A rate invites a tolerance, and the acceptable number of unverified citations relied on in client work is zero.
+
+### 13. First use of a newly deployed tool on a Restricted matter
+| | |
+|---|---|
+| **Condition** | `first session for a tool where tier in (Restricted, Barrier)` |
+| **Fires when** | value `>=` 1 |
+| **Severity** | High |
+| **Owner** | General Counsel |
+
+New tools reach sensitive work before the policy that governs them does. This fires on the first occurrence, not on a volume threshold, because the point is to review the decision before it becomes a pattern.
+
+### 14. Lawyer active across two barrier groups in 90 days
+| | |
+|---|---|
+| **Condition** | `distinct barrier_group_id per lawyer, rolling 90 days` |
+| **Fires when** | value `>=` 2 |
+| **Severity** | Critical |
+| **Owner** | General Counsel |
+
+A screening signal, not a finding: barriers lift, people get reassigned, groups close. It is deliberately sensitive because the cost of one missed crossing outweighs the cost of checking a short list by hand.
+
+### 15. Lawyer mandatory review completion below 70%
+| | |
+|---|---|
+| **Condition** | `reviewed / mandatory outputs per lawyer per quarter, minimum 25 outputs` |
+| **Fires when** | value `<` 0.7 |
+| **Severity** | Critical |
+| **Owner** | Risk & Compliance |
+
+This is the screen that works, and which signal to use was measured rather than assumed: ranked against held-out ground truth, review completion recovers 11 of 16 non-compliant lawyers in a 20-name list at 55% precision, while ranking by restricted-tier exposure recovers 3. The threshold deliberately over-collects. About half the names will be lawyers who are merely behind rather than non-compliant, and no measure separates those two -- that is a conversation, not a query. Recall is capped near 69% because a lawyer with fewer than 25 outputs requiring review has no computable rate and cannot appear at all.
+
+### 16. Restricted-tier session rate above 3x the firm median
+| | |
+|---|---|
+| **Condition** | `share of a lawyer's sessions on Restricted or Barrier matters, per quarter` |
+| **Fires when** | value `>` 3 |
+| **Severity** | Low |
+| **Owner** | Risk & Compliance |
+
+Context, not a screen, and it is scored here so nobody rebuilds it as one. It reads as the obvious governance signal and is not: at a 20-name list it runs at 15% precision against 55% for review completion, because how much sensitive work a lawyer is staffed on dominates how much they choose to use AI on it. Kept at low severity to give the review-completion list its context.
+
+## Operational
+
+Set at the point where a lawyer abandons the tool, or where a feed has stopped telling the truth.
+
+### 1. p95 latency above 8s
+| | |
+|---|---|
+| **Condition** | `p95 latency over trailing 24h` |
+| **Fires when** | value `>` 8000 |
+| **Severity** | High |
+| **Owner** | IT Operations |
+
+Past roughly eight seconds a lawyer stops waiting and goes back to doing it by hand. The threshold is set at the point of abandonment, not at a system limit.
+
+### 2. Error rate above 5% over 24h
+| | |
+|---|---|
+| **Condition** | `failed or timed-out sessions / all sessions` |
+| **Fires when** | value `>` 0.05 |
+| **Severity** | High |
+| **Owner** | IT Operations |
+
+Below 5% users retry and carry on; above it they stop trusting the tool, and trust is far slower to rebuild than uptime.
+
+### 3. Feed loaded zero rows
+| | |
+|---|---|
+| **Condition** | `rows_loaded for any source on any day` |
+| **Fires when** | value `=` 0 |
+| **Severity** | Critical |
+| **Owner** | Data Engineering |
+
+A silent zero-row load is indistinguishable on every other page from a genuine drop in usage. This is the only rule that catches it.
+
+### 4. Feed stale beyond 36 hours
+| | |
+|---|---|
+| **Condition** | `hours since last successful run` |
+| **Fires when** | value `>` 36 |
+| **Severity** | High |
+| **Owner** | Data Engineering |
+
+A dashboard built on a stale extract looks entirely healthy. Staleness is invisible everywhere except here.
+
+### 5. Referential failures above 1% of a source
+| | |
+|---|---|
+| **Condition** | `referential_failures / rows_loaded, 7-day` |
+| **Fires when** | value `>` 0.01 |
+| **Severity** | Medium |
+| **Owner** | Data Engineering |
+
+A chronic low-level mismatch never trips a daily threshold, yet every metric downstream is quietly understated. Trend, not status light.
+
+## Quality
+
+Aimed at the output rather than the platform: a tool can be fast, cheap and available while producing work nobody keeps.
+
+### 6. Median edit distance above 45%
+| | |
+|---|---|
+| **Condition** | `median edit_distance_pct by task type` |
+| **Fires when** | value `>` 45 |
+| **Severity** | Medium |
+| **Owner** | AI Operations |
+
+Beyond roughly half rewritten, the tool is costing more time than it saves for that task, whatever the acceptance rate says.
+
+### 7. Acceptance rate falls 15pp month on month
+| | |
+|---|---|
+| **Condition** | `change in acceptance rate` |
+| **Fires when** | value `<` -0.15 |
+| **Severity** | Medium |
+| **Owner** | AI Operations |
+
+A sharp drop usually means a model or prompt change reached production without anyone telling the people who rely on it.
+
+## Cost
+
+Unit economics, not spend. Spend rises with adoption and that is the plan working.
+
+### 8. Cost per accepted output above $12
+| | |
+|---|---|
+| **Condition** | `(licence + token cost) / accepted outputs` |
+| **Fires when** | value `>` 12 |
+| **Severity** | Medium |
+| **Owner** | Finance |
+
+Cost per call rewards a tool that is cheap and useless. Only cost per output a lawyer actually kept is a real unit cost, and it has to include licences: token spend is under 1% of what the firm pays. Counting tokens alone gives about 10 cents an output and makes the whole programme look free. The real figure is around $10.60, which is what the threshold is set against. Review time is still excluded, so this remains an understatement.
+
+### 9. Idle seat share above 40% for a paid tool
+| | |
+|---|---|
+| **Condition** | `seat-months with no session / seat-months, per tool per quarter` |
+| **Fires when** | value `>` 0.4 |
+| **Severity** | Medium |
+| **Owner** | Finance |
+
+Seats are bought at rollout and renewed annually; usage is checked, if at all, by someone looking at a session count. The gap between the two is money already spent. It is also the cheapest thing on this list to fix, because unlike adoption it needs no behaviour change from anyone -- just a reconciliation before renewal. The threshold is loose on purpose: some idle share is the cost of keeping a seat open for occasional need.
+
+### 10. Monthly cost 30% above trailing 3-month mean
+| | |
+|---|---|
+| **Condition** | `latest complete month (licence + token cost) / previous 3 calendar months mean - 1` |
+| **Fires when** | value `>` 0.3 |
+| **Severity** | Low |
+| **Owner** | Finance |
+
+Compares licence plus token cost in the latest complete calendar month with the previous three consecutive calendar months. Completeness uses the latest pipeline date, including non-working days. Missing months or a zero baseline are unevaluated, not healthy. Historical peaks do not keep the current alert open. Planned rollout or renewal changes still need Finance review.

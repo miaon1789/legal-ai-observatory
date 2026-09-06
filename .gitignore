@@ -1,0 +1,37 @@
+# --- private: working documents, not engineering documents ---
+# These carry framing and motivation written for me, not for a reader of the
+# repo. Their substance lives in docs/DATA_MODEL.md in English; the wording and
+# the reasons behind it do not belong in the record.
+LEGAL_AI_OBSERVATORY_BRIEF.md
+DATA_MODEL_DECISIONS_V2.md
+DATA_MODEL_DECISIONS*.md
+private/
+*.zh.md
+notes_cn/
+
+# --- env / secrets ---
+.venv/
+.env
+*.env
+secrets.json
+
+# --- generated data (regenerable from src/) ---
+data/raw/*.csv
+data/out/*.csv
+!data/raw/.gitkeep
+!data/out/.gitkeep
+# results/ is NOT ignored: those are committed evaluation artefacts
+
+# --- python ---
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# --- os / editor ---
+.DS_Store
+.vscode/
+.idea/
+
+# --- power bi ---
+*.pbix.bak
+~$*
