@@ -1,0 +1,2 @@
+# Only needed for the opt-in live OpenAI adapter; offline and SQL paths use stdlib.
+openai>=1.68.0,<3

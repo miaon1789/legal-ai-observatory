@@ -6,6 +6,7 @@ LEGAL_AI_OBSERVATORY_BRIEF.md
 DATA_MODEL_DECISIONS_V2.md
 DATA_MODEL_DECISIONS*.md
 private/
+# Observability logs, responses, rate cards, exports and extended PBIX stay here.
 *.zh.md
 notes_cn/
 

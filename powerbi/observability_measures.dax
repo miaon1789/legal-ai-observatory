@@ -1,0 +1,94 @@
+// Optional new page only. SQL telemetry.vw_requests must be named obs_requests.
+// Create one measure at a time. Do not paste this entire file as one measure.
+
+QA Requests = COALESCE ( COUNTROWS ( obs_requests ), 0 )
+
+QA Successful Requests =
+CALCULATE ( [QA Requests], KEEPFILTERS ( obs_requests[status] = "success" ) )
+
+QA Failed Requests =
+CALCULATE ( [QA Requests], KEEPFILTERS ( obs_requests[status] = "failed" ) )
+
+QA Failure Rate = DIVIDE ( [QA Failed Requests], [QA Requests] )
+
+QA Automatic Passes =
+CALCULATE ( [QA Requests], KEEPFILTERS ( obs_requests[auto_pass] = TRUE () ) )
+
+QA Automatic Pass Rate = DIVIDE ( [QA Automatic Passes], [QA Requests] )
+
+QA Retry Count = SUM ( obs_requests[retry_count] )
+
+QA P95 Request ms =
+IF ( [QA Requests] > 0, PERCENTILEX.INC ( obs_requests, obs_requests[duration_ms], 0.95 ) )
+
+QA Human Reviewed =
+COALESCE (
+    COUNTROWS (
+        FILTER ( obs_requests,
+            obs_requests[review_method] = "human"
+                && NOT ISBLANK ( obs_requests[human_task_pass] )
+        )
+    ), 0
+)
+
+QA Human Passes =
+CALCULATE (
+    [QA Requests],
+    KEEPFILTERS ( obs_requests[review_method] = "human" ),
+    KEEPFILTERS ( obs_requests[human_task_pass] = TRUE () )
+)
+
+QA Human Pass Rate = DIVIDE ( [QA Human Passes], [QA Human Reviewed] )
+
+QA Human Review Coverage = DIVIDE ( [QA Human Reviewed], [QA Successful Requests] )
+
+QA Citation Accuracy =
+AVERAGEX (
+    FILTER ( obs_requests,
+        obs_requests[review_method] = "human" && NOT ISBLANK ( obs_requests[citations_correct] )
+    ),
+    IF ( obs_requests[citations_correct], 1.0, 0.0 )
+)
+
+QA Major Rework Rate =
+AVERAGEX (
+    FILTER ( obs_requests,
+        obs_requests[review_method] = "human" && NOT ISBLANK ( obs_requests[major_rework] )
+    ),
+    IF ( obs_requests[major_rework], 1.0, 0.0 )
+)
+
+QA Mean Edit Ratio =
+CALCULATE (
+    AVERAGE ( obs_requests[edit_distance_ratio] ),
+    KEEPFILTERS ( obs_requests[review_method] = "human" )
+)
+
+QA Known Cost Requests = COALESCE ( COUNT ( obs_requests[estimated_cost] ), 0 )
+
+QA Cost Coverage = DIVIDE ( [QA Known Cost Requests], [QA Requests] )
+
+QA Estimated API Cost =
+VAR CurrencyCount =
+    COUNTROWS ( FILTER ( VALUES ( obs_requests[currency] ), NOT ISBLANK ( obs_requests[currency] ) ) )
+RETURN
+    IF (
+        [QA Requests] > 0 && [QA Known Cost Requests] = [QA Requests] && CurrencyCount = 1,
+        SUM ( obs_requests[estimated_cost] )
+    )
+
+QA Cost per Automatic Pass = DIVIDE ( [QA Estimated API Cost], [QA Automatic Passes] )
+
+QA Cost per Human Pass =
+IF (
+    [QA Human Reviewed] = [QA Successful Requests],
+    DIVIDE ( [QA Estimated API Cost], [QA Human Passes] )
+)
+
+QA Evidence Label =
+SWITCH (
+    SELECTEDVALUE ( obs_requests[data_origin], "mixed-or-empty" ),
+    "simulated", "Contract QA | SIMULATED FIXTURES",
+    "observed", "Contract QA | OBSERVED API RUNS / SYNTHETIC CASES",
+    "Contract QA | SELECT ONE DATA ORIGIN"
+)

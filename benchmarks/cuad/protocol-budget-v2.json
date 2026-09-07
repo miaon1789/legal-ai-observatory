@@ -1,0 +1,23 @@
+{
+  "protocol_id": "cuad-budget-v2",
+  "base_bundle_id": "38bd0ec1faa3ccdee2a16af0ecee03c8c670059eeb1423c0f729f22e9cd39d78",
+  "base_protocol_sha256": "e338a634d12367ed1f393f9d63d38b09825df5403703eb7748a20022b3d0b209",
+  "character_budget": 6000,
+  "budget_policy": "unique_source_characters; ranked_intervals_minus_already_selected; last_interval_clipped_to_remaining_budget",
+  "configurations": [
+    {"config_id": "bm25-250-budget", "words": 250, "overlap_words": 50, "preamble_characters": 0},
+    {"config_id": "bm25-120-budget", "words": 120, "overlap_words": 24, "preamble_characters": 0},
+    {"config_id": "bm25-120-preamble", "words": 120, "overlap_words": 24, "preamble_characters": 800}
+  ],
+  "preamble_categories": ["Agreement Date", "Effective Date"],
+  "baseline_config_id": "bm25-250-budget",
+  "development_policy": "reuse_exact_10_v1_development_documents; run_all_three_configurations",
+  "candidate_selection": "nonbaseline_max_macro_gold_character_recall_then_all_gold_covered_rate_then_config_id_ascending",
+  "fresh_evaluation": {"documents_per_length_quartile": [5, 5, 5, 5], "exclude": "all_v1_evaluation_ids_and_previously_reviewed_ids_and_normalized_duplicates"},
+  "selection_policy": "freeze_candidate_before_preparing_fresh_evaluation; do_not_tune_after_evaluation",
+  "query_policy": "reuse_v1_category_queries_unchanged",
+  "near_duplicate_check": "not_implemented; no_claim_of_related_transaction_isolation",
+  "case_origin": "public_real_contract",
+  "execution_origin": "local_algorithm",
+  "external_inference": "not_approved"
+}

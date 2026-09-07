@@ -1,0 +1,36 @@
+{
+  "protocol_id": "cuad-retrieval-50-v1",
+  "dataset_revision": "67faa0e6023b04fcaae6cc09497ab00e5d63a2a2",
+  "archive_sha256": "f8161d18bea4e9c05e78fa6dda61c19c846fb8087ea969c172753bc2f45b999a",
+  "selection_seed": "legal-ai-observatory-cuad-50-v1",
+  "selection": "length_quartiles_then_seeded_title_hash",
+  "split_quotas": {"development": [2, 3, 2, 3], "evaluation": [10, 10, 10, 10]},
+  "exclude_previously_reviewed_ids": [
+    "cuad-0038374672b5", "cuad-0084b1ca188d", "cuad-02d043ec3ad2", "cuad-03a1e0f461f5",
+    "cuad-03e9a903a7a7", "cuad-052975b81f97", "cuad-0556ac837501", "cuad-06394bd0cd53"
+  ],
+  "duplicate_policy": "exclude_all_members_of_whitespace_casefold_duplicate_groups_before_selection",
+  "categories": [
+    {"category": "Agreement Date", "query": "agreement dated date entered made executed"},
+    {"category": "Effective Date", "query": "effective date commencement commence becomes effective"},
+    {"category": "Expiration Date", "query": "expiration expires expiry term terminate termination date"},
+    {"category": "Renewal Term", "query": "renewal renew renewed successive additional term extension automatic"},
+    {"category": "Governing Law", "query": "governing law governed construed laws jurisdiction"},
+    {"category": "Termination For Convenience", "query": "terminate termination convenience without cause reason notice"},
+    {"category": "Anti-Assignment", "query": "assignment assign assigned transfer consent prior written"},
+    {"category": "Exclusivity", "query": "exclusive exclusivity exclusively sole competing competition"},
+    {"category": "Revenue/Profit Sharing", "query": "revenue profit sharing share royalties royalty percentage sales"},
+    {"category": "Audit Rights", "query": "audit inspect inspection books records accountant access"}
+  ],
+  "chunking": {"words": 250, "overlap_words": 50},
+  "retrieval": {"library": "rank-bm25", "version": "0.2.2", "algorithm": "BM25Okapi", "k1": 1.5, "b": 0.75, "epsilon": 0.25},
+  "configurations": [{"config_id": "bm25-top3", "top_k": 3}, {"config_id": "bm25-top5", "top_k": 5}],
+  "tokenization": "unicode_word_regex_casefold_no_stemming_no_stopwords",
+  "ranking": "descending_score_then_ascending_chunk_start_no_score_threshold",
+  "primary_metric": "answerable_macro_gold_character_recall",
+  "secondary_metrics": ["answerable_any_gold_hit_rate", "answerable_all_gold_covered_rate", "answerable_context_precision", "retrieved_character_count", "retrieval_latency_ms"],
+  "test_policy": "fixed_before_first_run; evaluation_is_accessed_after_scoring; no_tuning_on_evaluation",
+  "scope": "within_document_retrieval_only; no_answer_generation; no_abstention_classifier; no_official_CUAD_score",
+  "execution_origin": "local_algorithm",
+  "limits": {"external_inference": "not_approved", "publication_of_source_text": "not_approved", "legal_clearance": "not_established", "human_full_text_review": "pending"}
+}

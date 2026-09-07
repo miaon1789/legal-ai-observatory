@@ -3,8 +3,56 @@
 A monitoring system for a law firm's AI tooling — adoption, quality, running
 cost, and governance — built on a synthetic warehouse of 466,000 rows.
 
-**Status.** Complete. Generator, SQL layer, estimators and a five-page Power BI
-report, reproducible end to end from `src/generate.py` through `sql/run_all.sh`.
+**Status.** The synthetic baseline is complete: generator, SQL layer, estimators
+and a five-page Power BI report, reproducible end to end from `src/generate.py`
+through `sql/run_all.sh`.
+
+**Latest: equal-budget retrieval and a working SQL reporting layer.** A development-selected
+candidate was evaluated on 20 additional CUAD contracts, using the same per-query
+6,000-character cap as its baseline. Mean gold-character recall increased from
+85.13% to 91.86%; full-evidence coverage increased from 79.65% to 82.30%, with some
+task-level regressions. These are paired results on the new sample, not a direct
+comparison with v1 below. All 1,700 reporting rows across three runs now reconcile
+with a separate SQL `evaluation` schema. Windows Power BI work is still pending.
+See [the v2 experiment and SQL handoff](docs/CUAD_BUDGET_V2.md).
+
+**Real-data result: 50 public contracts, 500 tasks.** A separate CUAD experiment
+now has a fixed 10-contract development / 40-contract evaluation split and two
+actually executed local BM25 retrieval settings. On 215 answerable evaluation
+tasks, mean gold-character recall is 74.09% for Top 3 and 80.83% for Top 5; the
+latter retrieves 56.2% more context. All 185 unanswerable evaluation tasks remain
+in the workload. These are retrieval results, **not LLM answer accuracy or real
+law-firm usage**. See the [results and reproduction guide](docs/CUAD_REAL_DATA_RESULTS.md)
+and [aggregate artifact](results/cuad_retrieval_v1.json).
+CUAD is curated by [The Atticus Project](https://www.atticusprojectai.org/cuad/);
+[attribution and rights boundaries](docs/THIRD_PARTY_DATA.md) are recorded.
+Contract texts, labels and individual run logs remain private; no API was called.
+
+**New: contract QA observability pilot.** A separate `telemetry` schema supports
+36 fictional contract questions, two prompt configurations, request/attempt logs,
+versioned human feedback, idempotent SQL ingestion and fault/recovery exercises.
+Offline fixtures and SQL integration are validated. Live API evaluation, actual
+human review and the optional new Power BI page are pending, so this is not yet
+evidence of a better prompt or a real firm's AI usage. See
+[the pilot guide](docs/OBSERVED_RUNS.md).
+The [validation record](docs/OBSERVABILITY_VALIDATION.md) documents 40 passing
+tests, an end-to-end recovery drill, and what still needs live/Windows validation.
+
+**External-data review.** A [hybrid evaluation and data-use plan](docs/DATA_GOVERNANCE.md)
+keeps fictional regression cases separate from real-contract evaluation. A pinned
+CUAD archive and eight training documents have undergone [local intake checks](docs/CUAD_INTAKE_REVIEW.md).
+Two candidates received complete-text assistant review; one has a masked, private
+[preparation bundle](docs/CUAD_PREPARATION.md) and the other remains on hold.
+The larger local retrieval experiment is a separate, owner-authorized use with
+automated triage, not individual legal clearance. External model processing and
+publication of real contract text remain pending. These checks are not a guarantee
+of legal compliance.
+
+**Offline multi-evidence scorer.** A [separate scoring module](docs/EVIDENCE_EVALUATION.md)
+now checks exact source positions, multiple required evidence spans, overlapping
+annotations, explicit abstention and incomplete runs. Eight fictional documents
+and seven scripted scenarios exercise the metrics; 82 offline tests pass across
+the extension suites. This is software validation, not a model-performance claim.
 
 **Reporting corrections checked (7 September 2026).** Updated report screenshots
 match the SQL checks: 8 of 16 rules breached and AUD 10.14m of estimated Hourly
@@ -492,3 +540,5 @@ docker run -d --name mssql-legalai --platform linux/amd64 \
 | `powerbi/measures.dax` | the 42 measure definitions alone, paste-ready (generated) |
 | `docs/ALERT_RULES.md` | the 16 rules with the reasoning behind each threshold (generated from `dim_alert_rule`) |
 | `results/` | committed evaluation artefacts |
+| `docs/OBSERVED_RUNS.md` | separate contract QA pilot: commands, provenance, metrics, evaluation and privacy limits |
+| `powerbi/observability_measures.dax` | optional new-page measures; not part of the original five-page report |

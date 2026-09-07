@@ -1,0 +1,65 @@
+// Name the imported evaluation.vw_case_results table eval_results.
+// Create ONE measure at a time. Do not paste this whole file as one measure.
+// These are retrieval metrics, not model answer/abstention accuracy.
+
+Eval Contracts = DISTINCTCOUNT ( eval_results[document_id] )
+
+Eval Questions = DISTINCTCOUNT ( eval_results[case_id] )
+
+Eval Answerable Questions =
+CALCULATE ( [Eval Questions], KEEPFILTERS ( eval_results[is_answerable] = 1 ) )
+
+Eval Unanswerable Questions =
+CALCULATE ( [Eval Questions], KEEPFILTERS ( eval_results[is_answerable] = 0 ) )
+
+Eval Query Rows = COUNTROWS ( eval_results )
+
+Eval Failed Queries =
+COALESCE ( CALCULATE ( [Eval Query Rows], KEEPFILTERS ( eval_results[response_state] = "error" ) ), 0 )
+
+Eval Missing Queries =
+COALESCE ( CALCULATE ( [Eval Query Rows], KEEPFILTERS ( eval_results[response_state] = "missing" ) ), 0 )
+
+Eval Evidence Recall =
+IF (
+    HASONEVALUE ( eval_results[run_id] ) && HASONEVALUE ( eval_results[config_id] )
+        && HASONEVALUE ( eval_results[dataset_partition] ),
+    AVERAGE ( eval_results[gold_character_recall] )
+)
+
+Eval Full Evidence Rate =
+IF (
+    HASONEVALUE ( eval_results[run_id] ) && HASONEVALUE ( eval_results[config_id] )
+        && HASONEVALUE ( eval_results[dataset_partition] ),
+    AVERAGE ( eval_results[all_gold_covered] )
+)
+
+Eval Mean Context Characters =
+IF (
+    HASONEVALUE ( eval_results[run_id] ) && HASONEVALUE ( eval_results[config_id] )
+        && HASONEVALUE ( eval_results[dataset_partition] ),
+    AVERAGE ( eval_results[retrieved_characters] )
+)
+
+Eval Baseline Recall =
+CALCULATE (
+    [Eval Evidence Recall],
+    REMOVEFILTERS ( eval_results[config_id], eval_results[config_role] ),
+    eval_results[config_role] = "baseline"
+)
+
+Eval Candidate Recall =
+CALCULATE (
+    [Eval Evidence Recall],
+    REMOVEFILTERS ( eval_results[config_id], eval_results[config_role] ),
+    eval_results[config_role] = "candidate"
+)
+
+Eval Recall Gain pp =
+VAR Baseline = [Eval Baseline Recall]
+VAR Candidate = [Eval Candidate Recall]
+RETURN IF ( NOT ISBLANK ( Baseline ) && NOT ISBLANK ( Candidate ), 100 * ( Candidate - Baseline ) )
+
+Eval Page Title =
+"CUAD | " & SELECTEDVALUE ( eval_results[run_label], "Select one experiment" )
+    & " | Local retrieval"

@@ -1,0 +1,3 @@
+# Local retrieval only. No model download, API key or inference service required.
+rank-bm25==0.2.2
+numpy>=2,<3
