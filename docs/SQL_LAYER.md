@@ -51,20 +51,29 @@ and removed test database, without rebuilding the project database:
 for the current cost alert, breach count and billable revenue exposure, with
 bounded query memory for a laptop running Docker and a Windows VM together.
 
-## Constraints are part of the metric definitions
+## Constraint Definitions and Load Limits
 
-The CHECK constraints are not decoration. `review_policy_base` is restricted to
-its three values because a load that lower-cased `'Mandatory'` would break every
-governance measure silently. `fact_ai_session` requires that a `Success` row has
-no `error_type` and a failed row has one; `fact_incident` requires that a
-resolved incident has a resolution time and an unresolved one does not. Those
-two constraints also verify the load itself: they are the reason the CSV import
-is known to have preserved NULLs rather than turning them into empty strings.
+The schema defines CHECK constraints for the values and relationships used by
+the metrics. For example, `review_policy_base` has three permitted values,
+`fact_ai_session` requires an `error_type` only for unsuccessful sessions, and
+`fact_incident` requires a resolution time only for resolved incidents.
+`dim_matter` requires a `barrier_group_id` exactly when its tier is `Barrier`.
 
-`dim_matter` requires `barrier_group_id` exactly when the tier is `Barrier`.
+These definitions do not establish that the current bulk load validates them.
+[The loader](../sql/02_load/01_bulk_insert.sql) uses `FORMAT='CSV'`, `FIELDQUOTE`
+and `KEEPNULLS`, but does not specify `CHECK_CONSTRAINTS`. SQL Server therefore
+skips CHECK and foreign-key validation during this bulk import. Primary-key and
+UNIQUE constraints still apply. See [Microsoft's BULK INSERT documentation](https://learn.microsoft.com/en-us/sql/t-sql/statements/bulk-insert-transact-sql?view=sql-server-ver17#check_constraints).
 
-`dim_lawyer` has no `policy_cohort` column, deliberately — see
-`DATA_MODEL.md` §5.
+Loading dimensions before facts does not replace constraint checking. A
+successful import alone does not prove referential integrity or correct NULL
+handling. The project's separate data and reporting checks cover selected
+conditions, not every database constraint. Explicit bulk-load validation and
+tests with invalid input remain engineering work, as noted in the
+[case study](PORTFOLIO_CASE_STUDY.md#status-and-limitations).
+
+`dim_lawyer` has no `policy_cohort` column. The synthetic labels are withheld
+from the report, as described in [the data model](DATA_MODEL.md).
 
 ## Thresholds are data, not code
 
@@ -93,14 +102,26 @@ carrying traffic, it fires on **3**: exactly the planted outage. The view expose
 `is_unexpected_zero_load` alongside the raw flag so the distinction is visible
 rather than buried in a WHERE clause.
 
-**A rule that its own evaluation had already disproved.** The first draft of the
-catalogue screened lawyers by restricted-tier session volume. Evaluated against
-held-out ground truth that screen runs at 10% precision, and in SQL it returned
-67 names — not a short list. It has been replaced as the governance screen by
-per-lawyer mandatory review completion (65% precision, 81% recall) and demoted
-to a low-severity context rule, with its measured weakness written into its
-`rationale` so nobody rebuilds it as a screen. See
-`results/screening_comparison.csv`.
+**Review completion is the stronger screen in this scenario.** The comparison
+uses the full synthetic window, March 2025 to August 2026, and the same eligible
+population with at least 25 mandatory outputs. The Top 20 results are:
+
+| Ranking signal | True positives | Precision |
+|---|---:|---:|
+| Mandatory review completion, lowest first | 13/20 | 65% |
+| Restricted-tier session rate, highest first | 2/20 | 10% |
+| Restricted-tier session count, highest first | 4/20 | 20% |
+
+Rate is the proportion of a lawyer's sessions on sensitive matters. Count is
+the number of those sessions. They are different signals and must not share
+the same result label. See the [stored comparison](../results/screening_comparison.csv)
+and [rule catalogue](ALERT_RULES.md#screening-reference).
+
+The synthetic ground-truth labels are withheld from the report, not reserved
+as an independent test sample. These results describe one generated scenario.
+They do not validate a quarterly alert threshold or arbitrary report filters.
+Review completion supports the priority list, while exposure supplies context
+for follow-up. Neither is a finding of misconduct.
 
 **Lawyers using a tool they had no licence for.** An earlier version generated
 sessions first and allocated seats afterwards, which produced 231 Harvey seats

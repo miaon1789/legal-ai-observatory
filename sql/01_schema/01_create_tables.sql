@@ -1,9 +1,9 @@
-/*  Legal AI Operations Observatory — star schema
-    Six dimensions, five fact tables, and one result table.
+/*  Legal AI Operations Observatory: dimensional schema.
+    Six dimensions, six operational fact tables and one result table.
 
-    CHECK constraints carry the domains that the KPI definitions depend on. A
-    review policy of 'Mandatory' that a load could quietly turn into 'mandatory'
-    would break every governance measure silently, so the database refuses it.   */
+    CHECK constraints define values and relationships used by the metrics.
+    The current bulk loader does not enable CHECK or foreign-key validation.
+    See docs/SQL_LAYER.md for the distinction between definitions and checks. */
 
 IF DB_ID('LegalAIObservatory') IS NULL
     EXEC('CREATE DATABASE LegalAIObservatory');

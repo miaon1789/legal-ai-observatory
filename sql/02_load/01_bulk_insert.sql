@@ -1,12 +1,10 @@
-/*  Load the CSV extracts. Dimensions first, then facts, so the foreign keys
-    hold at every point rather than being disabled and re-checked.
+/*  Load CSV extracts mounted at /data/raw, dimensions before facts.
+    FORMAT='CSV' and FIELDQUOTE handle quoted fields. KEEPNULLS preserves
+    imported NULLs instead of replacing them with column defaults.
 
-    The extracts are mounted into the container at /data/raw. FORMAT='CSV' with
-    FIELDQUOTE handles the quoted free text in dim_alert_rule.rationale, and
-    leaves empty fields as NULL, which the CHECK constraints then verify:
-    a Success session must have no error_type, an unresolved incident must have
-    no resolution time. If the load corrupted either, the insert fails here
-    rather than surfacing as a wrong number on a dashboard.                    */
+    This path does not specify CHECK_CONSTRAINTS. CHECK and foreign-key
+    constraints are not validated during BULK INSERT. Loading dimensions first
+    does not replace validation. See docs/SQL_LAYER.md for the current limits. */
 
 USE LegalAIObservatory;
 GO

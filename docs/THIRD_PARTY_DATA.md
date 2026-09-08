@@ -2,6 +2,15 @@
 
 Checked: 9 September 2026.
 
+## Project Rights Scope
+
+The project's [copyright notice](../LICENSE) reserves rights in its original
+code, documentation and report definitions. It does not apply to third-party
+software, datasets or annotations, which retain their own licenses and notices.
+CUAD-derived labels embedded in the PBIX are included in the data scope below,
+not claimed as original project code. The project neither grants rights it
+does not hold nor restricts rights granted by third-party rights holders.
+
 ## CUAD
 
 Contract Understanding Atticus Dataset (CUAD) is curated and maintained by
@@ -43,7 +52,7 @@ attribution and rights. The dataset and source archive remain private.
 No endorsement by The Atticus Project, its contributors, contract parties or
 government agencies is claimed. Project-specific retrieval results are not the
 official CUAD benchmark score and are not legal advice or a compliance guarantee.
-These data conditions do not determine the license of this project's original code.
+The project's copyright notice does not change the rights available in CUAD material.
 
 ## Retrieval dependency
 

@@ -223,6 +223,20 @@ the downloaded dataset, source contracts, gold quotations or individual query lo
 [intake checks](docs/CUAD_INTAKE_REVIEW.md) document the source and use boundaries.
 External model processing requires a separate data-use review.
 
+## Copyright and Permissions
+
+Copyright 2026 Miao Ni. **All rights reserved.** This repository is a public
+portfolio, not an open-source license grant. Use, copying, modification,
+redistribution or commercial use of original project code, documentation and
+report definitions requires prior written permission, except where permitted
+by applicable law or GitHub's Terms of Service. See the [copyright notice](LICENSE).
+
+GitHub's platform rights to view and fork public repositories still apply.
+Third-party datasets, annotations and dependencies retain their own terms.
+This includes CUAD-derived labels embedded in the PBIX. The project does not
+claim ownership of CUAD material or restrict rights its publisher grants.
+See the [third-party data notice](docs/THIRD_PARTY_DATA.md).
+
 ## Further Reading
 
 | Topic | Document |
