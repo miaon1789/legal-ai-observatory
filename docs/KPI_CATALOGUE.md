@@ -299,7 +299,10 @@ Conventions used throughout:
 - **Formula**: reviewed outputs / outputs where `effective_review_policy = "Mandatory"`, per lawyer, minimum 25 mandatory outputs
 - **Grain**: lawyer × quarter
 - **Notes** ⚠ **this is what makes Page 5 actionable, and which signal to use was
-  measured rather than assumed** (`results/screening_comparison.csv`):
+  measured rather than assumed** (`results/screening_comparison.csv`). The
+  comparison below covers the full synthetic window with at least 25 mandatory
+  outputs per lawyer. It does not evaluate the quarterly alert. The candidate
+  screens share one scenario and are not tested on an independent sample:
 
   | Screen, 20 names | Precision | Recall | Avg precision |
   |---|---|---|---|
@@ -310,9 +313,8 @@ Conventions used throughout:
   Exposure barely separates them — how much sensitive work a lawyer is *staffed
   on* dominates how much they choose to use AI on it — and combining the two
   signals is worse than the strong one alone. **Recall is capped at 81%** because
-  three of the sixteen record too few outputs requiring review for any rate to be
-  computed: light users are invisible to a rate-based screen, which is a property
-  of the rule and is documented rather than tuned away.
+  three of the sixteen fail the minimum of 25 mandatory outputs. This is an
+  eligibility threshold, not a claim that every low-volume rate is undefined.
 
   So the honest answer to "how accurate is this list?" is **about two thirds
   right by design**: 13 genuinely non-compliant and 7 merely careless. No measure

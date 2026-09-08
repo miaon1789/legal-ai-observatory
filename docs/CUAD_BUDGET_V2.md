@@ -1,6 +1,14 @@
 # CUAD Equal-Budget Retrieval and SQL Handoff
 
-Completed locally on 7 September 2026. Windows Power BI implementation is pending.
+Experiment completed locally on 7 September 2026.
+
+Reporting update, 9 September: the sixth page of the
+[saved PBIX](../powerbi/legal-ai-observatory.pbix) now displays these results.
+Its imported rows, 14 evaluation measures and saved visual bindings were checked.
+[Screenshot 08](../powerbi/screenshots/08-real-contract-evaluation.png) is this
+sixth page, not an eighth report page. See the [release checklist](RELEASE_CHECKLIST.md)
+for remaining presentation checks. The experiment record below retains its
+original validation counts.
 
 ## Experiment
 
@@ -149,9 +157,11 @@ signature or authentication of experiment authorship.
 Validation: 128 offline tests pass and six new SQL integration tests pass in an
 automatically created/removed database. The new SQL tests cover long JSON transport,
 replay, conflict protection, failure/NULL denominators, rollback and run isolation.
-Power BI DAX and layout await Windows validation; no PBIX has been modified here.
+At that experiment checkpoint, Power BI DAX and layout awaited Windows work.
+The subsequent saved-file review is recorded at the top of this document.
 
 Tonight's assets are [the Power Query connection](../powerbi/cuad_query.m) and
 [fourteen DAX measures](../powerbi/cuad_measures.dax). The Chinese step-by-step
-handoff is private. This version ends at a working SQL reporting layer; no claim
-is made that the Power BI page has already been built or visually verified.
+handoff is private. The original experiment ended at a working SQL reporting
+layer. The later sixth page adds the numerical reporting view without changing
+the experiment, publishing source contracts or evaluating model answers.

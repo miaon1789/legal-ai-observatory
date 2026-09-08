@@ -1,6 +1,7 @@
 # Data Model
 
-Star schema for a synthetic legal-AI operations warehouse: 6 dimensions, 5 facts.
+Dimensional model for a synthetic legal-AI operations warehouse: 6 dimensions,
+6 operational fact tables and 1 fitted result table.
 All data is synthetic. The behavioural patterns encoded in it are **assumptions
 drawn from legal practice experience, not observations** — see §5.
 
@@ -14,24 +15,24 @@ drawn from legal practice experience, not observations** — see §5.
 | Offices | Sydney, Melbourne, Brisbane, Perth |
 | AI tools | Harvey, Copilot, Firm Chat |
 
-Row budget (target):
+Current CSV extracts, checked on 8 September 2026:
 
 | Table | Rows | Grain |
 |---|---|---|
 | `dim_lawyer` | 400 | one lawyer |
-| `dim_matter` | ~1,100 | one matter |
+| `dim_matter` | 1,100 | one matter |
 | `dim_tool` | 3 | one tool |
 | `dim_task_type` | 6 | one task type |
-| `dim_date` | ~640 | one calendar day (padded past the window) |
+| `dim_date` | 730 | one calendar day (padded past the window) |
 | `dim_alert_rule` | 16 | one monitoring rule |
-| `fact_ai_session` | ≤ 130,000 | one AI session |
-| `fact_ai_output` | ~110,000 | one output produced by a session |
-| `fact_time_entry` | ~250,000 | one lawyer × matter × day timesheet line |
-| `fact_incident` | ~450 | one logged incident |
-| `fact_pipeline_run` | ~1,650 | one source system × ingest day |
-| `fact_seat_month` | ~16,900 | one licensed seat × month |
+| `fact_ai_session` | 112,442 | one AI session |
+| `fact_ai_output` | 104,637 | one output produced by a session |
+| `fact_time_entry` | 226,082 | one lawyer × matter × day timesheet line |
+| `fact_incident` | 450 | one logged incident |
+| `fact_pipeline_run` | 1,647 | one source system × ingest day |
+| `fact_seat_month` | 16,863 | one licensed seat × month |
 | `fact_billable_impact_estimate` | 3 | one fee arrangement — a fitted result, not an observation |
-| **Total** | **~466,000** | |
+| **Total** | **464,379** | Excludes database snapshots and ETL logs |
 
 `fact_time_entry` is larger than `fact_ai_session`. That is expected and fine:
 timesheets are recorded daily per matter, and Import-mode Power BI is unbothered
@@ -435,9 +436,10 @@ was produced. It is **not** a column in `dim_lawyer`. Shipping it would let the
 dashboard filter on the answer — Page 5 would be performing a lookup and calling
 it a finding.
 
-**Which signal actually finds them.** Holding the cohort out makes the screening
-rule itself measurable. Candidate signals were scored against it —
-`src/screening_eval.py`, results in `results/screening_comparison.csv`:
+**Which signal actually finds them.** Candidate signals were compared on the
+same full synthetic window, not on an independent test sample. Labels were
+withheld from the report. The population requires at least 25 mandatory outputs.
+See `src/screening_eval.py` and `results/screening_comparison.csv`:
 
 | Screen, 20 names | Precision | Recall of the 16 | Average precision |
 |---|---|---|---|
@@ -459,11 +461,11 @@ completion alone. Averaging a strong signal with a weak one dilutes it; the
 combination is only worth building if the second signal adds independent
 information, and here it does not.
 
-**Recall is capped at 81%, and not by the ranking.** Three of the sixteen record
-fewer than 25 outputs requiring review, so no coverage rate can be computed for
-them at all. Light users are invisible to any rate-based screen no matter how it
-is ordered. That is a property of the rule and belongs in its documentation, not
-a number to be tuned away.
+**Recall is capped at 81% by eligibility.** Three of the sixteen record fewer
+than 25 mandatory outputs and are excluded by this rule. A rate may still be
+computable for a low-volume user. The minimum is a screening choice, not a
+mathematical limit. These full-window results do not automatically apply to
+quarterly alerts, changed filters or a different sample.
 
 Shortening the list trades recall for precision in the ordinary way, which is
 why the alert threshold is set to over-collect.

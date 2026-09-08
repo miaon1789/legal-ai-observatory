@@ -2,6 +2,13 @@
 
 Review date: 7 September 2026 (Australia/Sydney).
 
+Publication update, 9 September 2026: the current public PBIX contains five
+synthetic operations pages and a sixth page using numerical CUAD retrieval
+results. Its 1,700 evaluation rows were reviewed without source contracts,
+answer quotations or retrieved passages. See [the release scope](RELEASE_CHECKLIST.md)
+and [attribution notice](THIRD_PARTY_DATA.md). The earlier intake history below
+does not describe a blanket approval to publish the source dataset.
+
 Status: public licensing information reviewed; a pinned CUAD archive acquired and
 eight training documents triaged locally. The owner subsequently authorized a
 larger local experiment: [50 real contracts and 500 tasks](CUAD_REAL_DATA_RESULTS.md)
@@ -132,7 +139,10 @@ evaluation provider's terms still need to be checked when selected.
   a changed use require a new check. Local-only files should have an owner-chosen
   retention/review date and a documented response if rights concerns arise.
 
-Publication of external text or a real-data PBIX has not been approved here.
+Publication of external contract text remains outside the current scope. The
+9 September review covers only the named public PBIX, with synthetic operations
+and numerical evaluation results described in the release checklist. It does not
+cover the downloaded CUAD archive, source contracts or arbitrary database exports.
 
 ## Hybrid evaluation design
 

@@ -6,7 +6,7 @@ LEGAL_AI_OBSERVATORY_BRIEF.md
 DATA_MODEL_DECISIONS_V2.md
 DATA_MODEL_DECISIONS*.md
 private/
-# Observability logs, responses, rate cards, exports and extended PBIX stay here.
+# Raw contracts, individual logs, exports and private PBIX copies stay here.
 *.zh.md
 notes_cn/
 
@@ -14,7 +14,13 @@ notes_cn/
 .venv/
 .env
 *.env
+.env.*
+!.env.example
 secrets.json
+*.pem
+*.key
+*.p12
+*.pfx
 
 # --- generated data (regenerable from src/) ---
 data/raw/*.csv
@@ -34,5 +40,13 @@ __pycache__/
 .idea/
 
 # --- power bi ---
+powerbi/*.pbix
+!powerbi/legal-ai-observatory.pbix
 *.pbix.bak
 ~$*
+
+# --- local database files and backups ---
+*.bak
+*.bacpac
+*.mdf
+*.ldf

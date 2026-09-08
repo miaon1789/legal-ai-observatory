@@ -1,13 +1,15 @@
-"""Evaluate the Page 5 screening rules against held-out ground truth.
+"""Evaluate the Page 5 screens against withheld synthetic ground truth.
 
 The non-compliant cohort is generated but never published: `policy_cohort` is
 not a column in `dim_lawyer`, so the dashboard has to find these people from
-behaviour. That same held-out labelling makes the screening rule itself
+behaviour. The labels are withheld from the report, not an independent test
+sample. They make the screening rule itself
 measurable -- which candidate signal actually recovers them, at what precision,
 and how many escape any screen at all.
 
 This is the evidence behind the claim that Page 5 produces "a short list for a
-conversation, not a verdict": the list is about half true positives by design.
+conversation, not a verdict". Performance is measured on the full synthetic
+window and does not automatically apply to quarterly alerts or other filters.
 
 Run:  .venv/bin/python src/screening_eval.py
 """
@@ -110,10 +112,9 @@ def main() -> None:
                     values="recall_of_cohort").to_string())
 
     miss = cohort_total - cohort_screenable
-    print(f"\nCeiling: {miss} of {cohort_total} cohort members never reach any list — "
-          f"they record\nfewer than {MIN_MANDATORY} outputs requiring review, so no "
-          "coverage rate can be computed\nfor them. Light users are invisible to a "
-          "rate-based screen. That caps recall at\n"
+    print(f"\nCeiling: {miss} of {cohort_total} cohort members never reach any list. "
+          f"They record\nfewer than {MIN_MANDATORY} outputs requiring review and "
+          "are excluded by this rule.\nThat caps recall at\n"
           f"{cohort_screenable / cohort_total:.0%} however good the ranking is, and it "
           "is a property of the rule, not of\nthe data.")
 

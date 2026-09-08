@@ -1,0 +1,26 @@
+{
+  "protocol_id": "cuad-boundaries-dev-v3",
+  "parent_development_run_id": "5799a89c1d6544b7b90ed1ac88f56245",
+  "parent_candidate_id": "bm25-120-preamble",
+  "phase": "development_only",
+  "design_basis": "posthoc_v2_development_failure_diagnostics; not_a_new_holdout",
+  "character_budget": 6000,
+  "sentence_segmenter": {"library": "pysbd", "version": "0.3.4", "language": "en", "clean": false, "char_span": true},
+  "unit_policy": "partition_unchanged_source_at_detected_sentence_starts; whitespace_retained; no_claim_of_legal_clause_boundaries",
+  "candidate_policy": "same_BM25_window_ranking; visit_intersecting_sentence_units_in_source_order; deduplicate_units; accept_whole_unit_if_it_fits_remaining_budget_else_skip; never_clip_or_pad",
+  "preamble_policy": "date_queries_keep_same_800_character_seed_priority; candidate_expands_seed_to_intersecting_whole_units_within_total_budget",
+  "configurations": [
+    {"config_id": "v2-window-6000", "role": "baseline"},
+    {"config_id": "sentence-units-6000", "role": "candidate"},
+    {"config_id": "v2-window-matched", "role": "context_length_control"}
+  ],
+  "control_policy": "rerun_original_selector_with_each_candidate_query_unique_character_count_as_its_budget; zero_count_yields_empty_context; candidate_failure_is_control_error_not_zero_budget",
+  "primary_metric": "all_gold_covered_rate_on_all_answerable_development_tasks",
+  "guardrails": ["mean_recall_not_below_original_baseline", "no_original_baseline_fully_covered_task_lost", "all_three_arms_have_zero_errors_and_missing_queries"],
+  "decision": "only_qualify_for_future_frozen_evaluation_if_primary_strictly_improves_and_all_guardrails_pass; no_automatic_SQL_or_report_promotion",
+  "reporting": "publish_all_three_arms_and_all_regressions; report_actual_context_sizes; no_equal_size_claim_except_candidate_vs_matched_control",
+  "gold_policy": "load_references_after_all_new_predictions_are_saved; unchanged_v2_offsets_and_answers",
+  "evaluation_policy": "do_not_read_or_execute_v1_or_v2_evaluation_cases; future_generalization_requires_separate_predeclared_data",
+  "external_inference": "not_approved",
+  "publication_of_source_text": "not_approved"
+}

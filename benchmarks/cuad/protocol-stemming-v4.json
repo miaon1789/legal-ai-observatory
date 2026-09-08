@@ -1,0 +1,24 @@
+{
+  "protocol_id": "cuad-stemming-dev-v4",
+  "parent_development_run_id": "5799a89c1d6544b7b90ed1ac88f56245",
+  "parent_candidate_id": "bm25-120-preamble",
+  "phase": "development_only",
+  "design_basis": "previously_observed_v2_development_lexical_misses; separate_from_rejected_v3_sentence_policy",
+  "character_budget": 6000,
+  "normalizer": {"library": "snowballstemmer", "version": "3.1.1", "implementation": "snowballstemmer.english_stemmer.EnglishStemmer", "algorithm": "English_Porter2"},
+  "configurations": [
+    {"config_id": "v2-window-6000", "role": "baseline"},
+    {"config_id": "english-stem-6000", "role": "candidate"}
+  ],
+  "token_policy": "existing_unicode_word_regex_and_casefold_then_English_stemming_on_both_corpus_and_queries; keep_token_order_and_multiplicity; no_stopword_removal_or_synonyms",
+  "query_weight_note": "different_query_words_can_collapse_to_one_stem; duplicates_are_retained_not_reweighted_or_deduplicated",
+  "unchanged": ["raw_source_text_and_offsets", "120_word_windows_24_word_overlap", "BM25_parameters", "raw_category_queries", "800_character_date_preamble", "unique_character_budget", "rank_tie_break", "v2_labels"],
+  "context_policy": "exactly_min_6000_and_source_length_unique_source_characters_per_successful_query; original_clipping_rule; no_sentence_expansion",
+  "primary_metric": "all_gold_covered_rate_on_all_answerable_development_tasks",
+  "guardrails": ["mean_recall_not_below_v2_baseline", "no_v2_fully_covered_task_lost", "both_arms_have_zero_errors_and_missing_queries"],
+  "decision": "qualify_only_for_future_frozen_evaluation_if_primary_strictly_improves_and_all_guardrails_pass; never_auto_promote_to_SQL_or_PowerBI",
+  "gold_policy": "load_references_only_after_all_new_predictions_are_saved; no_label_changes",
+  "evaluation_policy": "development_only; do_not_read_or_execute_evaluation_documents; no_new_holdout_claim",
+  "external_inference": "not_approved",
+  "publication_of_source_text": "not_approved"
+}

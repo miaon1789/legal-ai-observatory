@@ -1,27 +1,34 @@
 # Alert rules
 
-Generated from `dim_alert_rule` by `src/export_alert_rules.py` — edit the rule
-data, not this file.
+Generated from `dim_alert_rule` and `results/screening_comparison.csv` by
+`src/export_alert_rules.py`. Edit the source data, not this file.
 
-This is a rule catalogue, not an alerting system. Building the delivery
-machinery would have been the easy half and the less useful one: what a firm
-lacks at this stage is not a way to send emails, it is agreement on what should
-trigger one and why.
+The catalogue defines conditions, thresholds, owners and reasons for follow-up.
+It supports the synthetic operations report. It does not send notifications.
 
 **Thresholds are data.** `vw_alert_status` computes a current value for each
 rule and applies the `threshold_value` and `comparison` stored here, so changing
 a threshold is a row update rather than an edit to SQL that hard-coded it. The
 `rationale` travels with the breach.
 
-**Governance thresholds are tighter, deliberately.** An operational rule
-tolerates a few percent of failure because the cost of a failure is a lawyer's
-wasted minute. A barrier-coverage rule does not, because the cost of a failure
-is privileged information crossing an information barrier — not recoverable, and
-reportable. A tolerance that is sensible for latency is negligent for a barrier.
-Being able to hold both kinds of threshold in the same catalogue, and to say why
-they differ, is the point of the document.
+Governance and operational rules use different thresholds because their risks
+differ. These are scenario assumptions. A real deployment would need its own
+policy owners to agree the thresholds and response process.
 
 16 rules: 6 governance, 5 operational, 2 quality, 3 cost.
+
+## Screening Reference
+
+Full synthetic window, March 2025 to August 2026. Each screen ranks the same eligible population with at least 25 mandatory outputs. Ground truth is withheld from the report, not from a separate test sample.
+
+| Screen, 20 names | True positives | Precision | Recall of full cohort |
+|---|---:|---:|---:|
+| Mandatory review completion | 13/20 | 65% | 81% |
+| Restricted-tier session rate | 2/20 | 10% | 13% |
+| Restricted-tier session count | 4/20 | 20% | 25% |
+| Rank sum of completion and exposure rate | 2/20 | 10% | 13% |
+
+Results come from `results/screening_comparison.csv`. Recall is rounded to whole percentages here. These results do not describe the quarterly alert threshold or arbitrary report filters. Low-volume users are excluded by the minimum-volume rule, not because every such rate is mathematically undefined. The list supports review, not a verdict.
 
 ## Governance
 
@@ -75,7 +82,7 @@ A screening signal, not a finding: barriers lift, people get reassigned, groups 
 | **Severity** | Critical |
 | **Owner** | Risk & Compliance |
 
-This is the screen that works, and which signal to use was measured rather than assumed: ranked against held-out ground truth, review completion recovers 11 of 16 non-compliant lawyers in a 20-name list at 55% precision, while ranking by restricted-tier exposure recovers 3. The threshold deliberately over-collects. About half the names will be lawyers who are merely behind rather than non-compliant, and no measure separates those two -- that is a conversation, not a query. Recall is capped near 69% because a lawyer with fewer than 25 outputs requiring review has no computable rate and cannot appear at all.
+Low mandatory review completion identifies cases for follow-up, not a finding of misconduct. The full-window Top 20 comparison is recorded in results/screening_comparison.csv and rendered in the rule catalogue. It uses synthetic ground truth withheld from the report, not an independent test sample. Lawyers with fewer than 25 mandatory outputs are excluded by the eligibility rule. A quarterly alert or a different filter requires its own evaluation. Incomplete review can also reflect delay rather than deliberate non-compliance.
 
 ### 16. Restricted-tier session rate above 3x the firm median
 | | |
@@ -85,7 +92,7 @@ This is the screen that works, and which signal to use was measured rather than 
 | **Severity** | Low |
 | **Owner** | Risk & Compliance |
 
-Context, not a screen, and it is scored here so nobody rebuilds it as one. It reads as the obvious governance signal and is not: at a 20-name list it runs at 15% precision against 55% for review completion, because how much sensitive work a lawyer is staffed on dominates how much they choose to use AI on it. Kept at low severity to give the review-completion list its context.
+Sensitive-session exposure provides context for the review list. Assignment to sensitive matters can drive this rate without implying misconduct. The full-window Top 20 comparison in results/screening_comparison.csv shows why exposure alone is a weaker screen in this synthetic scenario. The catalogue renders those results separately from this quarterly alert threshold.
 
 ## Operational
 

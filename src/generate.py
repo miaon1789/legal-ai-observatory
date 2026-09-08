@@ -903,22 +903,22 @@ ALERT_RULES = [
     ("Lawyer mandatory review completion below 70%", "Governance",
      "reviewed / mandatory outputs per lawyer per quarter, minimum 25 outputs", 0.70,
      "<", "Critical", "Risk & Compliance",
-     "This is the screen that works, and which signal to use was measured rather than "
-     "assumed: ranked against held-out ground truth, review completion recovers 11 of "
-     "16 non-compliant lawyers in a 20-name list at 55% precision, while ranking by "
-     "restricted-tier exposure recovers 3. The threshold deliberately over-collects. "
-     "About half the names will be lawyers who are merely behind rather than "
-     "non-compliant, and no measure separates those two -- that is a conversation, not "
-     "a query. Recall is capped near 69% because a lawyer with fewer than 25 outputs "
-     "requiring review has no computable rate and cannot appear at all."),
+     "Low mandatory review completion identifies cases for follow-up, not a finding "
+     "of misconduct. The full-window Top 20 comparison is recorded in "
+     "results/screening_comparison.csv and rendered in the rule catalogue. It uses "
+     "synthetic ground truth withheld from the report, not an independent test "
+     "sample. Lawyers with fewer than 25 mandatory outputs are excluded by the "
+     "eligibility rule. A quarterly alert or a different filter requires its own "
+     "evaluation. Incomplete review can also reflect delay rather than deliberate "
+     "non-compliance."),
     ("Restricted-tier session rate above 3x the firm median", "Governance",
      "share of a lawyer's sessions on Restricted or Barrier matters, per quarter", 3, ">",
      "Low", "Risk & Compliance",
-     "Context, not a screen, and it is scored here so nobody rebuilds it as one. It "
-     "reads as the obvious governance signal and is not: at a 20-name list it runs at "
-     "15% precision against 55% for review completion, because how much sensitive work "
-     "a lawyer is staffed on dominates how much they choose to use AI on it. Kept at "
-     "low severity to give the review-completion list its context."),
+     "Sensitive-session exposure provides context for the review list. Assignment "
+     "to sensitive matters can drive this rate without implying misconduct. The "
+     "full-window Top 20 comparison in results/screening_comparison.csv shows why "
+     "exposure alone is a weaker screen in this synthetic scenario. The catalogue "
+     "renders those results separately from this quarterly alert threshold."),
 ]
 
 dim_alert_rule = pd.DataFrame(ALERT_RULES, columns=[

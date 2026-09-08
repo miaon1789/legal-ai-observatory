@@ -1,6 +1,6 @@
 # Third-Party Data Notice
 
-Checked: 7 September 2026.
+Checked: 9 September 2026.
 
 ## CUAD
 
@@ -18,18 +18,27 @@ Review](https://arxiv.org/abs/2103.06268).
   identifies SEC EDGAR as the contract source and declines to warrant underlying
   contract license status. The dataset license is not a blanket rights clearance.
 
-For the real retrieval experiment, this project selects 50 documents and ten
-categories, preserves canonical texts and gold spans privately, constructs
-fixed-length retrieval chunks and original category queries, and computes its own
-character-overlap metrics. Text and annotation values are not corrected or masked
-in this local-only experiment. The earlier one-document masked preparation exercise
-is separate and is not included in this selection.
+Version 1 selects 50 documents and ten categories. Version 2 reuses the ten
+development contracts and adds twenty evaluation contracts, for 70 distinct
+contracts across the two experiments. Later ablations reuse development data.
+The project preserves canonical texts and gold spans privately, constructs
+retrieval chunks and category queries, and computes its own character-overlap
+metrics. Text and annotation values are not corrected or masked in these local
+experiments. The earlier masked preparation exercise remains separate.
 
 This repository's public artifacts contain protocol settings, code, hashes and
 aggregate results, not redistributed contract bodies, gold quotations, signatory
-details or individual predictions. This is a project publication choice, not a
-claim that CC BY categorically forbids redistribution. Any later excerpts or
-embedded Power BI data need a separate review of notices, attribution and rights.
+details or individual retrieval predictions. The reviewed
+[PBIX](../powerbi/legal-ai-observatory.pbix) additionally embeds 1,700 numerical
+per-task evaluation rows. These include document/task IDs, category, answerability
+labels, coverage metrics, context lengths and timing. They do not include source
+titles, source text, annotated answer text/spans or retrieved passages. IDs should
+not be treated as a guarantee of anonymisation.
+
+This is a project publication choice, not a claim that CC BY categorically forbids
+redistribution. Downloading the PBIX gives access to its imported data, not only
+its charts. Any added excerpts, columns or other data need a new review of notices,
+attribution and rights. The dataset and source archive remain private.
 
 No endorsement by The Atticus Project, its contributors, contract parties or
 government agencies is claimed. Project-specific retrieval results are not the
