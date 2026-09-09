@@ -29,8 +29,10 @@ Docker and BM25.
 
 ## What Evaluation Changed
 
-- **Governance:** Prioritised review completion after it outperformed exposure
-  and the tested rank-sum combination in the synthetic benchmark.
+- **Governance:** Rejected sensitive-session exposure as the primary shortlist
+  signal and kept it as context for human follow-up. The
+  [synthetic comparison](docs/ALERT_RULES.md#screening-reference) favoured review
+  completion over both exposure rate and their tested rank-sum combination.
 - **Billable impact:** Limited claims about differences between fee arrangements
   because the hours model did not recover the simulated effect sizes.
 - **Retrieval:** Kept v2 after sentence-boundary and stemming changes failed the

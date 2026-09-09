@@ -27,7 +27,36 @@ live Harvey or Copilot usage data, and the retrieval tests do not generate answe
 | Evaluation reporting | Separate SQL schema, replay checks, 1,700 reconciled rows and a sixth Power BI page | Numerical benchmark results, not contract text or model answers |
 | Observability | Request/attempt records and scripted fault/recovery drills | Fixture execution, not live provider monitoring |
 
-## Three Decisions Worth Explaining
+## Four Decisions Worth Explaining
+
+### Test the Screening Signal
+
+Sensitive-session exposure was a candidate governance signal. The project
+tested whether it could identify members of the generated risk cohort for
+human follow-up. At a list size of 20, the results were:
+
+| Ranking method | Cohort members in the list | Precision |
+|---|---:|---:|
+| Lowest mandatory review completion | 13/20 | 65% |
+| Highest sensitive-session exposure rate | 2/20 | 10% |
+| Rank sum of both signals | 2/20 | 10% |
+
+The comparison changed the role of exposure in the report. Review completion
+became the primary shortlist signal, while exposure was retained as context.
+The tested combination was not adopted because it performed worse than review
+completion alone. The [rule catalogue](ALERT_RULES.md#screening-reference)
+records the measured results and explains why exposure supports follow-up
+rather than a finding of misconduct.
+
+Matter assignment can affect exposure, but this comparison does not isolate
+its contribution or prove that it dominated individual behaviour. All three
+methods used the same synthetic population with at least 25 mandatory outputs.
+Labels were withheld from the report, but the comparison did not use an
+independent test sample. These results support a choice within this scenario,
+not a finding about actual lawyers or firms.
+
+Evidence: [screening results](../results/screening_comparison.csv) and
+[evaluation code](../src/screening_eval.py).
 
 ### Count the Eligible Population
 
@@ -93,7 +122,7 @@ These are analytical recommendations, not actions implemented by a client.
 |---|---|---|---|
 | Unused seat-months account for about 51% of licence spend | Synthetic seat and usage records | Review licence allocation before renewal | No actual licence savings were achieved |
 | A three-day ingestion outage removes sessions from the downstream table | Planted synthetic failure | Check data completeness before explaining a usage decline | The outage is deliberately generated |
-| The review-priority Top 20 contains 13 members of the generated risk cohort | Synthetic ground truth withheld from the report | Use the list for follow-up, not an automatic misconduct decision | Rules were compared on the same scenario, not an independent test sample |
+| The 20-person review-priority list contains 13 members of the generated risk cohort | Synthetic ground truth withheld from the report | Use the list for follow-up, not an automatic misconduct decision | Rules were compared on the same scenario, not an independent test sample |
 | Mean evidence recall improves at equal context length, but some cases regress | Twenty additional CUAD contracts | Retain per-case comparisons and regression checks | Retrieval coverage is not answer accuracy |
 
 The governance screen has a minimum of 25 mandatory outputs. Low-volume users
