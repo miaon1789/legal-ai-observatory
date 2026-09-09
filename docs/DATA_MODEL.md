@@ -351,10 +351,15 @@ fail is the substance of Page 3:
 | Total hours per matter, AI vs non-AI | **+41%** — wrong sign | Selection. Matters that attract AI are simply bigger. |
 | Within lawyer-matter, before vs after first use | unusable | 39% of AI lawyer-matters have no pre-period, and the median has **one** timesheet line before first use. Lawyers reach for AI as soon as they pick up a matter, so there is no "before". |
 | Control = the same lawyers' other matters | contaminated | Reinvested capacity lands on exactly those matters, so the treatment lifts its own control. |
-| **Control = matters of lawyers who never adopted** | see below | The one that survives. |
+| **Control = non-AI matters of zero-use or low-use lawyers** | see below | Used for the report, with limits described below. |
 
-The surviving estimate, with 95% intervals from standard errors clustered on the
-lawyer (170,589 timesheet lines, 50 cells, 370 clusters):
+The report uses a control pool of lawyers with fewer than 20 AI sessions across
+the full window, including those with no sessions. Their control rows must also
+be outside lawyer-matter pairs that meet the three-session AI threshold. This
+is not a strictly never-adopted group.
+
+The selected fit has 170,589 timesheet lines, 50 cells and 370 lawyer clusters.
+Its 95% intervals use standard errors clustered on the lawyer:
 
 | Fee arrangement | Effect | 95% CI | Designed |
 |---|---|---|---|
@@ -366,24 +371,40 @@ Clustering is not optional here. Timesheet lines within a lawyer are strongly
 correlated, and classical OLS intervals on this fit are narrower by roughly an
 order of magnitude — they would make every pair look separable.
 
-**What can and cannot be claimed.** The pairwise contrasts settle it:
+**Keep the comparison scales separate.** The estimator reports pairwise
+contrasts as `100 * (exp(beta_a - beta_b) - 1)`. These are relative percentages,
+not percentage-point differences between the effects above.
 
-| Contrast | Difference | 95% CI | Verdict |
+| Contrast | Relative contrast (%) | 95% CI (%) | Interval excludes zero |
 |---|---|---|---|
-| Capped vs Hourly | −0.7% | [−4.5, +3.4] | not distinguishable |
-| Capped vs Fixed Fee | +6.3% | [+0.9, +11.9] | distinguishable |
-| Fixed Fee vs Hourly | −6.5% | [−11.3, −1.5] | **distinguishable** |
+| Capped vs Hourly | -0.7 | [-4.5, +3.4] | No |
+| Capped vs Fixed Fee | +6.3 | [+0.9, +11.9] | Yes |
+| Fixed Fee vs Hourly | -6.5 | [-11.3, -1.5] | Yes |
 
-Capped and Hourly differ by 1pp in the design and by 0.7pp in the estimate, and
-the method correctly declines to separate them. Fixed Fee separates from both.
+These intervals are conditional on the fitted model. They do not establish a
+causal effect in a real firm or show that the simulated effect sizes were
+recovered accurately.
 
-**And a limit that only ground truth reveals.** The measured Fixed Fee gap
-(−6.5pp against Hourly) is larger than the designed one (−2pp). The
-non-adopter control is thinnest exactly where fixed-price work concentrates, so
-part of that significant contrast is residual bias rather than effect. On real
-data this would be invisible. It is worth stating plainly: **the direction is
-trustworthy, the magnitude of the gap is not**, and a page that reported
-"fixed-fee matters save 5pp more" would be overstating what the design supports.
+**The simulated inputs expose a limit.** For a like-for-like comparison in
+percentage points, subtract the effects in
+[the saved results](../results/billable_impact_estimate.csv):
+
+| Comparison | Designed difference (pp) | Estimated difference (pp) |
+|---|---:|---:|
+| Fixed Fee minus Hourly | -2.00 | -5.98 |
+| Fixed Fee minus Capped | -1.00 | -5.37 |
+| Capped minus Hourly | -1.00 | -0.61 |
+
+Negative values mean a more negative hours effect for the first arrangement.
+The -5.98pp Fixed Fee versus Hourly difference comes from -14.31% minus -8.33%.
+It is not the -6.5% relative contrast in the preceding table. The approximately
+5.4pp gap is against Capped, whose designed gap is 1pp, not 2pp.
+
+The ordering matches the synthetic inputs, but this fit does not recover their
+magnitudes. Uneven control-group support is a possible explanation, not a cause
+isolated by this comparison. Repeated simulations would be needed to assess
+estimator bias. The report therefore presents scenario estimates and uncertainty,
+not a claim that fixed-fee matters in real firms save a known amount more.
 
 **The estimator has to be named on the page.** A bare "−9%" without its control
 group is not a finding, which is why the estimate is stored with its provenance
@@ -400,9 +421,10 @@ become profit on their own — they become *capacity*, and only convert to profi
 if they are reinvested in chargeable work. A lawyer who saves ten hours and goes
 home early has improved no margin at all. The metric is therefore named
 **Notional Capacity Released**, and Page 3 is required to answer the second
-question: where did it go? The generator gives that question a real answer —
-about 60% of lawyers show the released hours reappearing as billable time on
-other matters within 30 days, and about 40% do not.
+question: where did it go? The generator designates about 60% of lawyers to
+reinvest released hours in eligible recorded work. It first uses a 30-day bucket,
+then the same three-bucket period if no eligible work exists in that bucket.
+This is a simulated mechanism, not an observed reinvestment rate.
 
 ### Design notes on pattern 5 — one cause, two symptoms
 
@@ -450,16 +472,17 @@ See `src/screening_eval.py` and `results/screening_comparison.csv`:
 
 Three things fall out of that table.
 
-**Exposure barely works.** How much sensitive work a lawyer is *staffed on*
-dominates how much they choose to use AI on it. A lawyer given more barrier
-matters is not the same as a lawyer ignoring the restriction, and neither the
-count nor the rate can tell them apart. Review completion is the signal;
-exposure is only the context.
+**Exposure was a weak ranking signal in this sample.** Sensitive-session
+exposure reflects both matter assignment and behaviour in the generator.
+The low precision does not, by itself, isolate how much each contributed.
+The report therefore prioritises review completion and retains exposure as
+context for human follow-up.
 
-**Combining the two makes it worse.** The rank sum scores below review
-completion alone. Averaging a strong signal with a weak one dilutes it; the
-combination is only worth building if the second signal adds independent
-information, and here it does not.
+**The tested combination performed worse.** The rank sum reached 10% precision
+at Top 20, compared with 65% for review completion alone. That result supports
+dropping this combination from the shortlist design. It does not show that
+every weighted combination would perform worse or that exposure contains no
+additional information.
 
 **Recall is capped at 81% by eligibility.** Three of the sixteen record fewer
 than 25 mandatory outputs and are excluded by this rule. A rate may still be
@@ -502,7 +525,7 @@ quoted everywhere else.
 | Adoption by level (plateau) | 78 / 65 / 48 / 22% | 74 / 64 / 52 / 20% |
 | M&A vs Litigation adoption | 2.5× | 2.1× (ceiling effect) |
 | Median edit distance, Litigation vs M&A | 34% vs 12% | 33.0% vs 11.1% |
-| Hours effect, Fixed / Capped / Hourly | −11 / −10 / −9% | −14.3 / −8.9 / −8.3% |
+| Estimated hours effect, Fixed / Capped / Hourly | −11 / −10 / −9% | −14.3 / −8.9 / −8.3% |
 | Released capacity reappearing as recorded time | 60% of lawyers | 41% of freed hours firm-wide |
 | Session exposure on Restricted + Barrier | ~3% | 4.9% |
 | Mandatory review completion, cohort vs rest | 55% vs 94% | ~51% vs ~90% |
@@ -515,13 +538,17 @@ Partner adoption is quantised: with stratified propensities and cells of
 fifteen to twenty partners, the number of adopters can only move in whole
 lawyers, so the realised rate steps rather than tunes.
 
-Two gaps are worth naming rather than tuning away. The Fixed Fee effect
-over-shoots its target by about 3pp because the non-adopter control is thinnest
-in exactly the cells where fixed-price work concentrates. And only 40% of
-released capacity reappears, against a 60% design target, because a heavy
-adopter can have every matter they touched in a quarter under AI, leaving the
-freed time nowhere to land — which is a finding about the firm, not a defect in
-the generator.
+Two distinctions matter when reading this table. The Fixed Fee estimate is
+3.31pp more negative than its -11% input. A single fit does not establish the
+cause of that discrepancy, as discussed in the pattern 4 notes above.
+
+The reinvestment figures have different denominators. The 60% input is a share
+of lawyers designated to reinvest, while 41% is a share of freed hours recorded
+elsewhere across the firm. It is not a shortfall against a 60% hours target.
+Reallocated hours can only land on recorded work without the simulated AI
+reduction, first within the same 30-day bucket or, if none is available, within
+the same three-bucket period. These are properties of the simulation, not
+findings about an actual firm.
 
 ## 8. Honesty constraint
 

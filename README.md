@@ -10,8 +10,6 @@ SQL Server support the data workflow and evidence-quality comparisons.
 **Stack:** Python, pandas, NumPy, SQL Server, T-SQL, Power BI, DAX, Power Query,
 Docker and BM25.
 
-![Executive overview of the synthetic AI operations dataset](powerbi/screenshots/01-executive-overview.png)
-
 [Case study and evidence](docs/PORTFOLIO_CASE_STUDY.md) |
 [Power BI report](powerbi/legal-ai-observatory.pbix) |
 [Real-contract results](docs/CUAD_BUDGET_V2.md)
@@ -20,12 +18,23 @@ Docker and BM25.
 
 - Built the reporting workflow around over 460,000 records covering 400 lawyers
   and 18 months of simulated operations.
-- Compared governance screens at Top 20. Review completion achieved 65%
-  precision, compared with 10% for sensitive-session exposure.
+- Built a 20-person review shortlist containing 13 members of the synthetic
+  risk cohort (65% precision), compared with two for exposure-rate ranking (10%).
+  The list supports human follow-up, not findings of misconduct.
 - Improved mean evidence recall from 85.13% to 91.86% on 113 answerable tasks
-  from 20 new contracts under the same context budget.
+  from 20 new CUAD contracts under the same context budget. Recall fell on nine
+  tasks despite the higher overall mean.
 - Reconciled 1,700 experiment result rows in SQL Server and verified that repeat
   imports added no duplicates.
+
+## What Evaluation Changed
+
+- **Governance:** Prioritised review completion after it outperformed exposure
+  and the tested rank-sum combination in the synthetic benchmark.
+- **Billable impact:** Limited claims about differences between fee arrangements
+  because the hours model did not recover the simulated effect sizes.
+- **Retrieval:** Kept v2 after sentence-boundary and stemming changes failed the
+  predefined acceptance criteria, with their regressions retained in the record.
 
 **Data and scope:** This is a personal prototype. Operations data is synthetic,
 including the tool names and financial scenarios. CUAD supplies public contracts
@@ -34,6 +43,11 @@ accuracy. There is no live provider integration, client deployment or measured
 business saving. Source contracts and individual query logs remain private.
 The PBIX includes per-task numerical evaluation results, answerability labels
 and document/task IDs, but no contract text or annotated answer spans.
+
+![Executive overview of the synthetic AI operations dataset](powerbi/screenshots/01-executive-overview.png)
+
+Headline KPIs, rule breaches and pipeline-health checks in the synthetic
+operations report.
 
 ## My Contribution
 
@@ -90,6 +104,20 @@ table has no relationships to the synthetic operations model. Earlier checks
 covered the chronological adoption trend and the Top 20 filter. These checks
 do not certify every Windows interaction or measure under arbitrary filters.
 
+### Billable Impact
+
+Separates estimated hourly revenue exposure from fixed-price capacity, with
+the comparison group and uncertainty shown alongside the figures.
+
+![Billable impact report with scenario estimates, comparison group and confidence intervals](powerbi/screenshots/03-billable-impact.png)
+
+### Governance and Risk
+
+A review-priority list based on mandatory review completion, with
+sensitive-session exposure retained as context for human follow-up.
+
+![Governance report with review coverage and a lawyer review-priority list](powerbi/screenshots/05-governance-risk.png)
+
 ## Real-Contract Evaluation
 
 A candidate was selected on ten development contracts, then compared with its
@@ -110,6 +138,11 @@ The mean recall gain was **6.73 percentage points**. Of the 113 answerable tasks
 were retained. See the
 [experiment record](docs/CUAD_BUDGET_V2.md) and
 [aggregate results](results/cuad_budget_v2.json).
+
+The evaluation page compares equal-budget retrieval by clause category and
+contract length, including categories where the candidate performs worse.
+
+![CUAD evaluation report comparing baseline and candidate evidence recall](powerbi/screenshots/08-real-contract-evaluation.png)
 
 Two later development experiments tested sentence boundaries and stemming.
 Both failed the predefined acceptance criteria, so neither replaced v2. Their
