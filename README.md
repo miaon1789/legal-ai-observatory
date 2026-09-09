@@ -30,11 +30,14 @@ Docker and BM25.
 ## What Evaluation Changed
 
 - **Governance:** Rejected sensitive-session exposure as the primary shortlist
-  signal and kept it as context for human follow-up. The
+  signal and kept it as context for human follow-up. Exposure can reflect both
+  the sensitive matters a lawyer is assigned and how they use AI. The
   [synthetic comparison](docs/ALERT_RULES.md#screening-reference) favoured review
   completion over both exposure rate and their tested rank-sum combination.
-- **Billable impact:** Limited claims about differences between fee arrangements
-  because the hours model did not recover the simulated effect sizes.
+- **Billable impact:** The simulated data included known reductions in hours,
+  but the estimate overstated the gap between fixed-fee and hourly work. The
+  report therefore shows the comparison group and uncertainty, not a claim of
+  proven savings.
 - **Retrieval:** Kept v2 after sentence-boundary and stemming changes failed the
   predefined acceptance criteria, with their regressions retained in the record.
 
@@ -83,9 +86,7 @@ findings and proposed actions.
 
 ## Power BI Report
 
-The saved report contains six pages. Screenshot numbers are file identifiers,
-not report page numbers: 06 is a list detail, 07 is the original operations
-model, and 08 shows the sixth report page.
+The saved report contains six pages.
 
 | Page | Focus | Preview |
 |---|---|---|
@@ -103,8 +104,9 @@ model, and 08 shows the sixth report page.
 Checks on 9 September 2026 covered the saved six-page report, its 18 imported
 tables, 14 evaluation measures and 1,700 cached evaluation rows. The evaluation
 table has no relationships to the synthetic operations model. Earlier checks
-covered the chronological adoption trend and the Top 20 filter. These checks
-do not certify every Windows interaction or measure under arbitrary filters.
+covered the chronological adoption trend and the filter for the 20-person
+review shortlist. These checks do not certify every Windows interaction or
+measure under arbitrary filters.
 
 ### Billable Impact
 
@@ -172,6 +174,9 @@ telemetry separate. Contract text and gold answer spans are not imported into
 the evaluation schema. Numeric labels and evidence metrics are stored there.
 
 ## Validation and Limits
+
+These prototype controls support defensibility by keeping review changes
+traceable and checking that reported results match their source records.
 
 - **Local software checks:** 169 offline tests passed on 9 September 2026.
   Synthetic consistency checks also passed on 8 September. These test software behaviour
